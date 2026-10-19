@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-LKPD Bangun Ruang</title>
+  <style>
+    :root {
+      --primary: #6C5CE7; --secondary: #a29bfe; --success: #00b894;
+      --danger: #ff7675; --warning: #fdcb6e; --bg: #f4f6fb; --text: #2d3436;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* LOGIN */
+    .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #6C5CE7 0%, #a29bfe 50%, #dfe6e9 100%); padding: 20px; }
+    .login-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 450px; text-align: center; }
+    .login-card h1 { color: var(--primary); margin-bottom: 5px; font-size: 1.8rem; }
+    .login-card h2 { color: #636e72; font-size: 1rem; margin-bottom: 20px; font-weight: normal; }
+    .input-group { text-align: left; margin-bottom: 15px; }
+    .input-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; color: #636e72; }
+    .input-group input, .input-group select { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 1rem; transition: 0.3s; }
+    .input-group input:focus, .input-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2); }
+
+    .btn-primary { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 1rem; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; margin-top: 10px; }
+    .btn-primary:hover { background: #5a4bcf; transform: translateY(-2px); }
+    .btn-secondary { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 10px 20px; border-radius: 10px; font-size: 1rem; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; margin-top: 10px; }
+    .btn-secondary:hover { background: var(--primary); color: white; }
+    .btn-logout { background: var(--danger); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .btn-logout:hover { background: #e55b5b; }
+
+    .header { background: white; padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+    .header-content { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; gap: 10px; flex-wrap: wrap; }
+    .header h1 { color: var(--primary); font-size: 1.4rem; }
+    .user-info { display: flex; align-items: center; gap: 15px; font-weight: bold; }
+    .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+
+    .instruction { background: #ffeaa7; padding: 15px; border-radius: 10px; margin-bottom: 20px; color: #d63031; font-weight: bold; line-height: 1.5; }
+
+    /* KARTU KELOMPOK */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+    .card-kelompok { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s; text-align: center; border-top: 6px solid #dfe6e9; position: relative; }
+    .card-kelompok:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+    .card-kelompok .icon { font-size: 3rem; margin-bottom: 10px; }
+    .card-kelompok h3 { margin-bottom: 5px; color: var(--text); font-size: 1.2rem; }
+    .card-kelompok p { color: #636e72; font-size: 0.85rem; margin-bottom: 15px; }
+    .card-kelompok .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; background: #f1f2f6; color: #636e72; }
+    
+    .card-kelompok.warna-1 { border-top-color: #fd79a8; }
+    .card-kelompok.warna-2 { border-top-color: #e1b12c; }
+    .card-kelompok.warna-3 { border-top-color: #00b894; }
+    .card-kelompok.warna-4 { border-top-color: #0984e3; }
+    .card-kelompok.warna-5 { border-top-color: #6c5ce7; }
+    .card-kelompok.warna-6 { border-top-color: #d63031; }
+
+    /* FORM PENILAIAN */
+    .form-penilaian-box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .form-penilaian-box h4 { color: var(--primary); margin-bottom: 15px; font-size: 1.1rem; border-bottom: 2px dashed #dfe6e9; padding-bottom: 10px; }
+    .form-penilaian-box textarea { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 10px; font-size: 0.95rem; min-height: 120px; margin-bottom: 10px; font-family: inherit; transition: 0.3s; }
+    .form-penilaian-box textarea:focus { border-color: var(--primary); outline: none; }
+    .form-penilaian-box textarea:disabled { background: #f1f2f6; color: #636e72; cursor: not-allowed; }
+    .kata-counter { font-size: 0.85rem; color: #636e72; margin-bottom: 15px; display: block; text-align: right; }
+    .kata-counter span { font-weight: bold; color: var(--primary); }
+    .locked-msg { background: #ffeaa7; color: #d63031; padding: 10px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; margin-bottom: 15px; display: none; }
+
+    /* DASHBOARD GURU */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .stat-card { padding: 25px; border-radius: 15px; color: white; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .stat-card.purple { background: linear-gradient(135deg, #6C5CE7, #a29bfe); }
+    .stat-card.red { background: linear-gradient(135deg, #ff7675, #e55b5b); }
+    .stat-card.green { background: linear-gradient(135deg, #00b894, #55efc4); }
+    .stat-card h2 { font-size: 2.5rem; margin-bottom: 5px; }
+    .stat-card p { font-size: 1rem; opacity: 0.9; }
+
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn { padding: 10px 20px; border: none; background: white; border-radius: 20px; cursor: pointer; font-weight: bold; color: #636e72; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .tab-btn.active { background: var(--primary); color: white; }
+    .tab-content { display: none; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-x: auto; }
+    .tab-content.active { display: block; }
+
+    .search-bar { width: 100%; padding: 12px; border: 2px solid #dfe6e9; border-radius: 10px; margin-bottom: 15px; font-size: 1rem; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dfe6e9; }
+    th { background: var(--primary); color: white; font-weight: bold; }
+    tr:hover { background: #f4f6fb; }
+
+    /* POPUP & LOADING */
+    .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+    .popup-box { background: white; padding: 30px; border-radius: 20px; max-width: 400px; width: 90%; text-align: center; animation: slideUp 0.4s ease; }
+    @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .popup-box h2 { margin-bottom: 10px; color: var(--primary); }
+    .popup-box p { margin-bottom: 20px; color: #636e72; }
+    .popup-buttons { display: flex; gap: 10px; }
+
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; }
+    .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- HALAMAN LOGIN -->
+  <div id="login-page" class="page active">
+    <div class="login-container">
+      <div class="login-card">
+        <h1>📐 E-LKPD Interaktif</h1>
+        <h2>Bangun Ruang Kelas IX</h2>
+        <p>Silakan login untuk memulai!</p>
+        <div class="input-group">
+          <label>Nama Lengkap</label>
+          <input type="text" id="login-nama" placeholder="Masukkan nama lengkapmu">
+        </div>
+        <div class="input-group">
+          <label>Kelas</label>
+          <select id="login-kelas">
+            <option value="">-- Pilih Kelas --</option>
+            <option value="8A">8A</option><option value="8B">8B</option><option value="8C">8C</option>
+            <option value="8D">8D</option><option value="8E">8E</option><option value="9A">9A</option>
+            <option value="9B">9B</option><option value="9C">9C</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Kelompok</label>
+          <select id="login-kelompok">
+            <option value="">-- Pilih Kelompok --</option>
+            <option value="1">Kelompok 1 (Kubus)</option>
+            <option value="2">Kelompok 2 (Balok)</option>
+            <option value="3">Kelompok 3 (Prisma)</option>
+            <option value="4">Kelompok 4 (Limas)</option>
+            <option value="5">Kelompok 5 (Tabung)</option>
+            <option value="6">Kelompok 6 (Kerucut & Bola)</option>
+          </select>
+        </div>
+        <button class="btn-primary" onclick="handleLogin()">Masuk 🚀</button>
+        <button class="btn-secondary" onclick="showTeacherLogin()">Masuk sebagai Guru 👨‍🏫</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HALAMAN BERANDA SISWA -->
+  <div id="main-page" class="page">
+    <header class="header">
+      <div class="header-content">
+        <h1>🏠 Beranda Siswa</h1>
+        <div class="user-info">
+          <span id="welcome-msg">Halo!</span>
+          <button onclick="logout()" class="btn-logout">🚪 Keluar</button>
+        </div>
+      </div>
+    </header>
+    <main class="container">
+      <p class="instruction">Silakan pilih kelompok yang sedang presentasi untuk memberikan penilaian, refleksi, dan kesimpulan. <b>Pastikan kamu sudah yakin sebelum menekan tombol Kirim, karena jawaban tidak dapat diubah lagi!</b></p>
+      <div class="card-grid" id="kelompok-cards"></div>
+    </main>
+  </div>
+
+  <!-- HALAMAN DETAIL PENILAIAN -->
+  <div id="detail-page" class="page">
+    <header class="header">
+      <div class="header-content">
+        <h1 id="detail-title">📋 Penilaian Kelompok</h1>
+        <button onclick="goToMain()" class="btn-logout">⬅️ Beranda</button>
+      </div>
+    </header>
+    <div class="container">
+      <div id="detail-container"></div>
+    </div>
+  </div>
+
+  <!-- HALAMAN DASHBOARD GURU -->
+  <div id="teacher-page" class="page">
+    <header class="header">
+      <div class="header-content">
+        <h1>📊 Dashboard Guru</h1>
+        <div>
+          <button onclick="resetDatabaseFromDashboard()" class="btn-logout" style="background: #e67e22; margin-right: 5px;">🗑️ Reset Database</button>
+          <button onclick="refreshDashboard()" class="btn-primary" style="width:auto; padding:8px 15px; font-size:0.9rem; margin-right:10px; display:inline-block;">🔄 Refresh Data</button>
+          <button onclick="logout()" class="btn-logout">🚪 Keluar</button>
+        </div>
+      </div>
+    </header>
+    <main class="container">
+      <div class="stats-grid">
+        <div class="stat-card purple"><h2 id="total-siswa">0</h2><p>Siswa Terdaftar</p></div>
+        <div class="stat-card red"><h2 id="total-log">0</h2><p>Log Aktivitas</p></div>
+        <div class="stat-card green"><h2 id="total-jawaban">0</h2><p>Jawaban Terkumpul</p></div>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('ringkasan', this)">Ringkasan Siswa</button>
+        <button class="tab-btn" onclick="openTab('log', this)">Log Aktivitas</button>
+        <button class="tab-btn" onclick="openTab('jawaban', this)">Lihat Jawaban</button>
+      </div>
+      <div id="ringkasan" class="tab-content active">
+        <input type="text" id="search-siswa" onkeyup="filterTable()" placeholder="🔍 Cari nama siswa..." class="search-bar">
+        <table id="tabel-siswa">
+          <thead><tr><th>Nama</th><th>Kelas</th><th>Kelompok</th><th>Tahap Terakhir</th><th>Waktu Update</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="log" class="tab-content">
+        <table id="tabel-log">
+          <thead><tr><th>Waktu</th><th>Nama</th><th>Kelas</th><th>Aktivitas</th><th>Keterangan</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="jawaban" class="tab-content">
+        <table id="tabel-jawaban">
+          <thead><tr><th>Nama</th><th>Kelas</th><th>Aspek</th><th>Jawaban</th><th>Skor</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- POPUP MELANJUTKAN -->
+  <div id="popup-continue" class="popup-overlay hidden">
+    <div class="popup-box">
+      <h2>👋 Selamat Datang Kembali!</h2>
+      <p>Kamu belum menyelesaikan E-LKPD ini. Mau lanjutkan dari mana?</p>
+      <div class="popup-buttons">
+        <button class="btn-secondary" onclick="startFromScratch()">Mulai dari Awal</button>
+        <button class="btn-primary" onclick="continueFromLast()">Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loading" class="loading-overlay hidden">
+    <div class="spinner"></div>
+    <p>Memuat data...</p>
+  </div>
+
+  <script>
+    // URL WEB APP (DITAMBAHKAN authuser=0 UNTUK MENCEGAH ERROR DI HP)
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwda9pqaC_f67shYOpLfpJCLjTIWaXt1hUvfpv-z7HPxeyzsLXsFpWj-oqRmLby0KGDEw/exec?authuser=0";
+
+    let currentUser = { nama: "", kelas: "", kelompok: "" };
+    let lastProgress = "0";
+    let jawabanSiswa = {}; 
+
+    // FUNGSI API UNTUK KOMUNIKASI DENGAN GOOGLE APPS SCRIPT
+    async function callAPI(action, data = {}) {
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: action, ...data }),
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        });
+        const result = await response.json();
+        if (result.status === "error") throw new Error(result.message);
+        return result.data;
+      } catch (error) {
+        console.error("API Error:", error);
+        throw error;
+      }
+    }
+
+    function showLoading(show) { document.getElementById('loading').classList.toggle('hidden', !show); }
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // ===== LOGIN =====
+    async function handleLogin() {
+      const nama = document.getElementById('login-nama').value.trim();
+      const kelas = document.getElementById('login-kelas').value;
+      const kelompok = document.getElementById('login-kelompok').value;
+      if (!nama || !kelas || !kelompok) { alert("Mohon lengkapi nama, kelas, dan kelompok!"); return; }
+
+      showLoading(true);
+      currentUser = { nama, kelas, kelompok };
+
+      try {
+        const res = await callAPI('login', { nama, kelas, kelompok });
+        lastProgress = res.lastProgress;
+        document.getElementById('welcome-msg').textContent = `Halo, ${nama} (${kelas} - Kel. ${kelompok})`;
+        
+        const dataJawaban = await callAPI('getJawaban', { nama, kelas });
+        showLoading(false);
+        jawabanSiswa = dataJawaban;
+        renderBeranda();
+        showPage('main-page');
+        if (!res.isNew && lastProgress !== "0") {
+          document.getElementById('popup-continue').classList.remove('hidden');
+        }
+      } catch (error) {
+        showLoading(false);
+        alert("❌ GAGAL LOGIN:\n" + error.message);
+      }
+    }
+
+    function showTeacherLogin() {
+      const pass = prompt("Masukkan password guru:");
+      if (pass === "guru123") {
+        showPage('teacher-page');
+        loadDashboardData();
+        callAPI('logActivity', { nama: "GURU", kelas: "-", aktivitas: "Login", keterangan: "Guru membuka dashboard" });
+      } else { alert("Password salah!"); }
+    }
+
+    function logout() {
+      if (confirm("Yakin ingin keluar?")) {
+        showLoading(true);
+        callAPI('logActivity', { nama: currentUser.nama || "GURU", kelas: currentUser.kelas || "-", aktivitas: "Logout", keterangan: "Keluar dari sistem" })
+          .finally(() => {
+            showLoading(false); 
+            document.getElementById('login-nama').value = ""; 
+            showPage('login-page');
+          });
+      }
+    }
+
+    function startFromScratch() { document.getElementById('popup-continue').classList.add('hidden'); }
+    function continueFromLast() {
+      document.getElementById('popup-continue').classList.add('hidden');
+      if (lastProgress !== "0") bukaDetailKelompok(parseInt(lastProgress));
+    }
+
+    // ===== SISWA =====
+    function renderBeranda() {
+      const container = document.getElementById('kelompok-cards'); container.innerHTML = "";
+      const kelompokList = [
+        { id: 1, nama: "Kubus", icon: "🧊" }, { id: 2, nama: "Balok", icon: "📦" },
+        { id: 3, nama: "Prisma", icon: "🔺" }, { id: 4, nama: "Limas", icon: "🏔️" },
+        { id: 5, nama: "Tabung", icon: "🥫" }, { id: 6, nama: "Kerucut & Bola", icon: "🍦" }
+      ];
+      kelompokList.forEach(k => {
+        if (String(k.id) === String(currentUser.kelompok)) return; 
+        const isSelesai = jawabanSiswa[`K${k.id}-Refleksi`] && jawabanSiswa[`K${k.id}-Refleksi`].status === "Terkunci";
+        const card = document.createElement('div');
+        card.className = `card-kelompok warna-${k.id}`;
+        card.onclick = () => bukaDetailKelompok(k.id);
+        card.innerHTML = `
+          <div class="icon">${k.icon}</div><h3>Kelompok ${k.id}</h3><p>${k.nama}</p>
+          <div class="status-badge" style="${isSelesai ? 'background:#00b894; color:white;' : ''}">
+            ${isSelesai ? '✅ Selesai Dinilai' : '⏳ Belum Dinilai'}
+          </div>`;
+        container.appendChild(card);
+      });
+    }
+
+    function bukaDetailKelompok(idKelompok) {
+      showPage('detail-page');
+      const namaKelompok = ["", "Kubus", "Balok", "Prisma", "Limas", "Tabung", "Kerucut & Bola"][idKelompok];
+      document.getElementById('detail-title').textContent = `📋 Penilaian Kelompok ${idKelompok} (${namaKelompok})`;
+      const container = document.getElementById('detail-container'); container.innerHTML = "";
+
+      const bangunList = idKelompok === 6 ? ["Kerucut", "Bola"] : [namaKelompok];
+      bangunList.forEach(bangun => {
+        const prefix = idKelompok === 6 ? `K6-${bangun}-` : `K${idKelompok}-`;
+        const box = document.createElement('div'); box.className = 'form-penilaian-box';
+        box.innerHTML = `<h4>Penilaian Bangun: ${bangun}</h4>`;
+        const aspekList = [
+          { id: "Penilaian1", label: "1. Tuliskan ciri-ciri dan unsur-unsur bangun ruang ini (minimal 50 kata):" },
+          { id: "Penilaian2", label: "2. Jelaskan proses penemuan rumus luas permukaan dan volume (minimal 50 kata):" },
+          { id: "Penilaian3", label: "3. Berikan contoh penerapan bangun ini dalam kehidupan sehari-hari (minimal 50 kata):" }
+        ];
+        aspekList.forEach(aspek => {
+          const fullId = prefix + aspek.id;
+          const savedData = jawabanSiswa[fullId] || { jawaban: "", status: "Draf", skor: 0 };
+          const isLocked = savedData.status === "Terkunci";
+          box.innerHTML += `
+            <div style="margin-bottom:20px;">
+              <label style="font-weight:bold; font-size:0.9rem; display:block; margin-bottom:5px;">${aspek.label}</label>
+              <div class="locked-msg" id="lock-${fullId}" style="${isLocked ? 'display:block;' : ''}">🔒 Jawaban sudah dikirim dan tidak dapat diubah.</div>
+              <textarea id="input-${fullId}" oninput="hitungKata('${fullId}', this.value)" ${isLocked ? 'disabled' : ''} placeholder="Tuliskan jawabanmu di sini...">${savedData.jawaban}</textarea>
+              <span class="kata-counter" id="count-${fullId}">${hitungKataTeks(savedData.jawaban)} kata (Skor: <span>${savedData.skor || 0}</span>)</span>
+            </div>`;
+        });
+        container.appendChild(box);
+      });
+
+      const prefixUmum = `K${idKelompok}-`;
+      const refleksiSaved = jawabanSiswa[`${prefixUmum}Refleksi`] || { jawaban: "", status: "Draf", skor: 0 };
+      const kesimpulanSaved = jawabanSiswa[`${prefixUmum}Kesimpulan`] || { jawaban: "", status: "Draf", skor: 0 };
+      const isLockedUmum = refleksiSaved.status === "Terkunci";
+
+      const boxUmum = document.createElement('div'); boxUmum.className = 'form-penilaian-box';
+      boxUmum.innerHTML = `
+        <h4>Bagian Akhir (Refleksi & Kesimpulan)</h4>
+        <div style="margin-bottom:20px;">
+          <label style="font-weight:bold; font-size:0.9rem; display:block; margin-bottom:5px;">4. Refleksi Diri (minimal 50 kata)</label>
+          <div class="locked-msg" id="lock-${prefixUmum}Refleksi" style="${isLockedUmum ? 'display:block;' : ''}">🔒 Jawaban sudah dikirim.</div>
+          <textarea id="input-${prefixUmum}Refleksi" oninput="hitungKata('${prefixUmum}Refleksi', this.value)" ${isLockedUmum ? 'disabled' : ''} placeholder="Tuliskan refleksimu...">${refleksiSaved.jawaban}</textarea>
+          <span class="kata-counter" id="count-${prefixUmum}Refleksi">${hitungKataTeks(refleksiSaved.jawaban)} kata (Skor: <span>${refleksiSaved.skor || 0}</span>)</span>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-weight:bold; font-size:0.9rem; display:block; margin-bottom:5px;">5. Kesimpulan (minimal 50 kata)</label>
+          <div class="locked-msg" id="lock-${prefixUmum}Kesimpulan" style="${isLockedUmum ? 'display:block;' : ''}">🔒 Jawaban sudah dikirim.</div>
+          <textarea id="input-${prefixUmum}Kesimpulan" oninput="hitungKata('${prefixUmum}Kesimpulan', this.value)" ${isLockedUmum ? 'disabled' : ''} placeholder="Tuliskan kesimpulanmu...">${kesimpulanSaved.jawaban}</textarea>
+          <span class="kata-counter" id="count-${prefixUmum}Kesimpulan">${hitungKataTeks(kesimpulanSaved.jawaban)} kata (Skor: <span>${kesimpulanSaved.skor || 0}</span>)</span>
+        </div>`;
+      container.appendChild(boxUmum);
+
+      const btnBox = document.createElement('div'); btnBox.style.textAlign = "right";
+      btnBox.innerHTML = `
+        <button class="btn-primary" style="width:auto; padding:15px 30px; font-size:1.1rem; ${isLockedUmum ? 'display:none;' : ''}" onclick="submitKelompok(${idKelompok})">🔒 Kirim Penilaian Kelompok ${idKelompok}</button>
+        <button class="btn-secondary" style="width:auto; padding:15px 30px; margin-left:10px;" onclick="goToMain()">Kembali</button>`;
+      container.appendChild(btnBox);
+    }
+
+    function hitungKata(idFull, value) {
+      const count = hitungKataTeks(value); let skor = 1;
+      if (count >= 100) skor = 5; else if (count >= 70) skor = 4; else if (count >= 50) skor = 3; else if (count >= 15) skor = 2;
+      document.getElementById(`count-${idFull}`).innerHTML = `${count} kata (Skor: <span>${skor}</span>)`;
+    }
+    function hitungKataTeks(teks) { return (!teks || teks.trim() === "") ? 0 : teks.trim().split(/\s+/).length; }
+
+    async function submitKelompok(idKelompok) {
+      if (!confirm("Apakah kamu yakin? Setelah dikirim, jawaban TIDAK DAPAT diubah lagi.")) return;
+      showLoading(true);
+      const inputs = document.querySelectorAll('#detail-container textarea:not(:disabled)');
+      let promises = [];
+      
+      inputs.forEach(input => {
+        const idFull = input.id.replace('input-', ''); const val = input.value;
+        promises.push(callAPI('saveAnswer', { 
+          nama: currentUser.nama, kelas: currentUser.kelas, kelompok: currentUser.kelompok, 
+          idAspek: idFull, jawaban: val, tahap: String(idKelompok), isLocked: true 
+        }));
+      });
+
+      try {
+        await Promise.all(promises);
+        alert("✅ Jawaban berhasil dikirim!");
+        jawabanSiswa = await callAPI('getJawaban', { nama: currentUser.nama, kelas: currentUser.kelas });
+        showLoading(false);
+        goToMain();
+      } catch (err) {
+        showLoading(false);
+        alert("❌ GAGAL MENGIRIM:\n" + err.message);
+      }
+    }
+
+    function goToMain() { renderBeranda(); showPage('main-page'); }
+
+    // ===== DASHBOARD GURU =====
+    function openTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active'); if (btn) btn.classList.add('active');
+    }
+
+    async function loadDashboardData() {
+      showLoading(true);
+      try {
+        const data = await callAPI('getAllData');
+        showLoading(false); 
+        renderDashboard(data);
+      } catch (err) {
+        showLoading(false); 
+        alert("❌ GAGAL MUAT:\n" + err.message);
+      }
+    }
+    function refreshDashboard() { alert("Memuat data terbaru..."); loadDashboardData(); }
+
+    function resetDatabaseFromDashboard() {
+      if(confirm("⚠️ PERINGATAN KERAS:\nIni akan menghapus SEMUA data siswa dan jawaban yang sudah masuk. Lanjutkan?")) {
+        showLoading(true);
+        callAPI('reset').then(res => {
+          showLoading(false); alert(res); loadDashboardData();
+        }).catch(err => {
+          showLoading(false); alert("Gagal reset: " + err.message);
+        });
+      }
+    }
+
+    function renderDashboard(data) {
+      // Karena server sudah membuang baris judul dan baris kosong, kita tinggal hitung panjang arraynya
+      document.getElementById('total-siswa').textContent = data.users.length;
+      document.getElementById('total-log').textContent = data.log.length;
+      document.getElementById('total-jawaban').textContent = data.jawaban.length;
+      
+      // Render Tabel Siswa
+      const tbodySiswa = document.querySelector('#tabel-siswa tbody'); tbodySiswa.innerHTML = "";
+      data.users.forEach(row => {
+        tbodySiswa.innerHTML += `<tr>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>Kel. ${row[2]}</td>
+          <td>Tahap ${row[3]}</td>
+          <td>${row[4]}</td>
+        </tr>`;
+      });
+      
+      // Render Tabel Log (Urutkan dari yang terbaru)
+      const tbodyLog = document.querySelector('#tabel-log tbody'); tbodyLog.innerHTML = "";
+      const sortedLog = [...data.log].sort((a, b) => new Date(b[0]) - new Date(a[0]));
+      sortedLog.forEach(row => {
+        tbodyLog.innerHTML += `<tr>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[2]}</td>
+          <td>${row[3]}</td>
+          <td>${row[4]}</td>
+        </tr>`;
+      });
+      
+      // Render Tabel Jawaban
+      const tbodyJawaban = document.querySelector('#tabel-jawaban tbody'); tbodyJawaban.innerHTML = "";
+      data.jawaban.forEach(row => {
+        tbodyJawaban.innerHTML += `<tr>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[3]}</td>
+          <td>${row[4]}</td>
+          <td>Skor: ${row[5] || '-'}</td>
+          <td>${row[6] || '-'}</td>
+        </tr>`;
+      });
+    }
+
+    function filterTable() {
+      const input = document.getElementById('search-siswa').value.toLowerCase();
+      document.querySelectorAll('#tabel-siswa tbody tr').forEach(row => { row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none'; });
+    }
+  </script>
+</body>
+</html>
